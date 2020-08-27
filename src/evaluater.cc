@@ -8,7 +8,7 @@ using namespace geometry_msgs;
 using namespace message_filters;
 
 void callback(const PoseStamped pose1, const PoseStamped pose2){
-	printf("%d,%d\n",pose1.pose.position.x,pose1.pose.position.y);
+	printf("%lf,%lf\n",pose1.pose.position.x,pose1.pose.position.y);
 }
 int main(int argc, char **argv){
 	ros::init(argc, argv, "evaluater");
