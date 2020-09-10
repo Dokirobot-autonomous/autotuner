@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <vector>
+#include <utility> //pair
 #include <math.h>
 #include <tf/transform_listener.h>
 #include "csv.h"
@@ -22,65 +23,88 @@ double calError(tf::Vector3 &a,tf::Vector3 &b){
 	return ret;
 }
 /*
-void callback(const OdometryConstPtr &topic1, const PoseStampedConstPtr &topic2){
-	static double distance = 0.0;
-	static int cnt=0;
-	static double error = 0;
-	static bool flag=false;
-	PoseStamped orb_lidar_pos;
-	PointStamped div_lio_pos, div_orb_pos;
+	 void callback(const OdometryConstPtr &topic1, const PoseStampedConstPtr &topic2){
+	 static double distance = 0.0;
+	 static int cnt=0;
+	 static double error = 0;
+	 static bool flag=false;
+	 PoseStamped orb_lidar_pos;
+	 PointStamped div_lio_pos, div_orb_pos;
 
-	div_lio_pos.header.frame_id = "map";
-	div_orb_pos.header.frame_id = "map";
-	
+	 div_lio_pos.header.frame_id = "map";
+	 div_orb_pos.header.frame_id = "map";
 
-	getLidarPose(topic2,&orb_lidar_pos);
 
-	tf::Vector3 init_lio_pose,init_orb_pose,lio_pose,orb_pose,lio_relative_pose,orb_relative_pose;
-	tf::Vector3 previous_lio_pose;
-	lio_pose = tf::Vector3(topic1->pose.pose.position.x,topic1->pose.pose.position.y,0.0);
-	orb_pose = tf::Vector3(orb_lidar_pos.pose.position.x,orb_lidar_pos.pose.position.y,0.0); 
-	//orbのカメラ座標からlidarの座標を算出
-	output_pub.publish(orb_lidar_pos);
-	if(!flag){
-		div_lio_pos.point.x = lio_pose.getX();
-		div_lio_pos.point.y = lio_pose.getY();
-		div_lio_pos.point.z = 0.0;
-		div_orb_pos.point.x = orb_pose.getX();
-		div_orb_pos.point.y = orb_pose.getY();
-		div_orb_pos.point.z = 0.0;
-		output_lio_division.publish(div_lio_pos);
-		output_orb_division.publish(div_orb_pos);
-		init_lio_pose = lio_pose; 
-		init_orb_pose = orb_pose;
-		previous_lio_pose = lio_pose;
-		flag = true;
-	}
-	if(distance<MAX_EVALUATION_DISTANCE){
-		if(cnt%5==0)distance += lio_pose.distance2(previous_lio_pose);
-		cnt++;
-		previous_lio_pose = lio_pose;
-		lio_relative_pose = lio_pose-init_lio_pose;
-		orb_relative_pose = orb_pose-init_orb_pose;
-		error += calError(lio_relative_pose,orb_relative_pose);		
-	}
-	else{
+	 getLidarPose(topic2,&orb_lidar_pos);
 
-		printf("%lf\n",error);
-		error=0.0;
-		cnt=0;
-		distance=0.0;
-		flag=false;
-	}
+	 tf::Vector3 init_lio_pose,init_orb_pose,lio_pose,orb_pose,lio_relative_pose,orb_relative_pose;
+	 tf::Vector3 previous_lio_pose;
+	 lio_pose = tf::Vector3(topic1->pose.pose.position.x,topic1->pose.pose.position.y,0.0);
+	 orb_pose = tf::Vector3(orb_lidar_pos.pose.position.x,orb_lidar_pos.pose.position.y,0.0); 
+//orbのカメラ座標からlidarの座標を算出
+output_pub.publish(orb_lidar_pos);
+if(!flag){
+div_lio_pos.point.x = lio_pose.getX();
+div_lio_pos.point.y = lio_pose.getY();
+div_lio_pos.point.z = 0.0;
+div_orb_pos.point.x = orb_pose.getX();
+div_orb_pos.point.y = orb_pose.getY();
+div_orb_pos.point.z = 0.0;
+output_lio_division.publish(div_lio_pos);
+output_orb_division.publish(div_orb_pos);
+init_lio_pose = lio_pose; 
+init_orb_pose = orb_pose;
+previous_lio_pose = lio_pose;
+flag = true;
+}
+if(distance<MAX_EVALUATION_DISTANCE){
+if(cnt%5==0)distance += lio_pose.distance2(previous_lio_pose);
+cnt++;
+previous_lio_pose = lio_pose;
+lio_relative_pose = lio_pose-init_lio_pose;
+orb_relative_pose = orb_pose-init_orb_pose;
+error += calError(lio_relative_pose,orb_relative_pose);		
+}
+else{
+
+printf("%lf\n",error);
+error=0.0;
+cnt=0;
+distance=0.0;
+flag=false;
+}
 
 
 
 }
-*/
+ */
 struct pose_t {
 	uint64_t stamp;
 	geometry_msgs::Pose pose;
 };
+
+void getMatchTimePair(std::vector<pose_t> &ref, std::vector<pose_t> &target, std::vector<std::pair<int,int>> &index){
+	int ref_index;
+	int target_index;
+	uint64_t ref_stamp,target_stamp;
+	uint64_t delta,min;
+	target_index = 0;
+	for(ref_index=0;ref_index<ref.size();ref_index++){
+		min = 0xFFFFFFFFFFFFFFFF;
+		ref_stamp = ref[ref_index].stamp;
+		for(target_index=0;target_index<target.size();target_index++){
+			target_stamp = target[target_index].stamp;
+			if(ref_stamp >= target_stamp) delta = ref_stamp - target_stamp;
+			else delta = target_stamp - ref_stamp;
+			if(delta<min) min = delta;
+			else break;
+		}
+		index.push_back(std::pair<int,int>(ref_index,target_index));
+
+	}
+
+
+}
 
 int main(int argc, char **argv){
 	ros::init(argc, argv, "evaluater");
@@ -88,33 +112,71 @@ int main(int argc, char **argv){
 	ros::NodeHandle n;
 	std::vector<pose_t> ref_pose,target_pose;
 	pose_t tmp_pose;
+	std::string str;
+	std::vector<std::pair<int,int>> match_pair;
 
-	io::CSVReader<8> target_csv("test.csv");
+	io::CSVReader<8> target_csv("target.csv");
+	io::CSVReader<8> ref_csv("ref.csv");
 	target_csv.read_header(io::ignore_extra_column,
-	"field.header.stamp",
-	"field.pose.position.x",
-	"field.pose.position.y",
-	"field.pose.position.z",
-	"field.orientation.x",
-	"field.orientation.y",
-	"field.orientation.z",
-	"field.orientation.w"
-	);
+			"field.header.stamp",
+			"field.pose.position.x",
+			"field.pose.position.y",
+			"field.pose.position.z",
+			"field.orientation.x",
+			"field.orientation.y",
+			"field.orientation.z",
+			"field.orientation.w"
+			);
+	ref_csv.read_header(io::ignore_extra_column,
+			"field.header.stamp",
+			"field.pose.pose.position.x",
+			"field.pose.pose.position.y",
+			"field.pose.pose.position.z",
+			"field.pose.pose.orientation.x",
+			"field.pose.pose.orientation.y",
+			"field.pose.pose.orientation.z",
+			"field.pose.pose.orientation.w"
+			);
+
+
 
 	while(target_csv.read_row(
-		tmp_pose.stamp,
-		tmp_pose.pose.position.x,
-		tmp_pose.pose.position.y,
-		tmp_pose.pose.position.z,
-		tmp_pose.pose.orientation.x,
-		tmp_pose.pose.orientation.y,	
-		tmp_pose.pose.orientation.z,
-		tmp_pose.pose.orientation.w)
-		){
-		
+				str,
+				tmp_pose.pose.position.x,
+				tmp_pose.pose.position.y,
+				tmp_pose.pose.position.z,
+				tmp_pose.pose.orientation.x,
+				tmp_pose.pose.orientation.y,	
+				tmp_pose.pose.orientation.z,
+				tmp_pose.pose.orientation.w)
+			){
+		tmp_pose.stamp = std::stoull(str); 
+		//printf("%lu\n",tmp_pose.stamp);
+		target_pose.push_back(tmp_pose);
+	}
+	while(ref_csv.read_row(
+				str,
+				tmp_pose.pose.position.x,
+				tmp_pose.pose.position.y,
+				tmp_pose.pose.position.z,
+				tmp_pose.pose.orientation.x,
+				tmp_pose.pose.orientation.y,	
+				tmp_pose.pose.orientation.z,
+				tmp_pose.pose.orientation.w)
+			){
+
+		tmp_pose.stamp = std::stoull(str); 
 		ref_pose.push_back(tmp_pose);
 	}
-	printf("%zu\n",ref_pose.size());
+	printf("ref_pose col:%zu\n",ref_pose.size());
+	printf("target_pose col:%zu\n",target_pose.size());
+
+	getMatchTimePair(ref_pose,target_pose,match_pair);
+
+	for(int i=0;i<match_pair.size();i++){
+		printf("match pair %d %d\n",match_pair[i].first,match_pair[i].second);
+	}
+
 	ROS_INFO("start\n");
 
 	ros::spin();
