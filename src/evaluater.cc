@@ -7,83 +7,25 @@
 
 #define MAX_EVALUATION_DISTANCE 3.0 
 
-using namespace geometry_msgs;
-using namespace std_msgs;
-
 void GetRPY(const geometry_msgs::Quaternion &q,
 		double &roll,double &pitch,double &yaw){
 	tf::Quaternion quat(q.x,q.y,q.z,q.w);
 	tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 }
-double calError(tf::Vector3 &a,tf::Vector3 &b){
-	double ret,ex,ey;
-	ex = a.getX() - b.getX();
-	ey = a.getY() - b.getY();
-	ret = ex*ex + ey*ey;
-	return ret;
-}
-/*
-	 void callback(const OdometryConstPtr &topic1, const PoseStampedConstPtr &topic2){
-	 static double distance = 0.0;
-	 static int cnt=0;
-	 static double error = 0;
-	 static bool flag=false;
-	 PoseStamped orb_lidar_pos;
-	 PointStamped div_lio_pos, div_orb_pos;
+typedef std::pair<geometry_msgs::Pose,geometry_msgs::Pose> PairPose_t;
+typedef std::vector<PairPose_t> PairPoseList_t;
 
-	 div_lio_pos.header.frame_id = "map";
-	 div_orb_pos.header.frame_id = "map";
-
-
-	 getLidarPose(topic2,&orb_lidar_pos);
-
-	 tf::Vector3 init_lio_pose,init_orb_pose,lio_pose,orb_pose,lio_relative_pose,orb_relative_pose;
-	 tf::Vector3 previous_lio_pose;
-	 lio_pose = tf::Vector3(topic1->pose.pose.position.x,topic1->pose.pose.position.y,0.0);
-	 orb_pose = tf::Vector3(orb_lidar_pos.pose.position.x,orb_lidar_pos.pose.position.y,0.0); 
-//orbのカメラ座標からlidarの座標を算出
-output_pub.publish(orb_lidar_pos);
-if(!flag){
-div_lio_pos.point.x = lio_pose.getX();
-div_lio_pos.point.y = lio_pose.getY();
-div_lio_pos.point.z = 0.0;
-div_orb_pos.point.x = orb_pose.getX();
-div_orb_pos.point.y = orb_pose.getY();
-div_orb_pos.point.z = 0.0;
-output_lio_division.publish(div_lio_pos);
-output_orb_division.publish(div_orb_pos);
-init_lio_pose = lio_pose; 
-init_orb_pose = orb_pose;
-previous_lio_pose = lio_pose;
-flag = true;
-}
-if(distance<MAX_EVALUATION_DISTANCE){
-if(cnt%5==0)distance += lio_pose.distance2(previous_lio_pose);
-cnt++;
-previous_lio_pose = lio_pose;
-lio_relative_pose = lio_pose-init_lio_pose;
-orb_relative_pose = orb_pose-init_orb_pose;
-error += calError(lio_relative_pose,orb_relative_pose);		
-}
-else{
-
-printf("%lf\n",error);
-error=0.0;
-cnt=0;
-distance=0.0;
-flag=false;
-}
-
-
-
-}
- */
 struct pose_t {
 	uint64_t stamp;
 	geometry_msgs::Pose pose;
 };
 
-void getMatchTimePair(std::vector<pose_t> &ref, std::vector<pose_t> &target, std::vector<std::pair<int,int>> &index){
+void getMatchTimePair(
+	std::vector<pose_t> &ref,
+	std::vector<pose_t> &target,
+	PairPoseList_t &list
+	){
+
 	int ref_index;
 	int target_index;
 	uint64_t ref_stamp,target_stamp;
@@ -97,14 +39,45 @@ void getMatchTimePair(std::vector<pose_t> &ref, std::vector<pose_t> &target, std
 			if(ref_stamp >= target_stamp) delta = ref_stamp - target_stamp;
 			else delta = target_stamp - ref_stamp;
 			if(delta<min) min = delta;
-			else break;
+			else {
+				target_index--;
+				break;
+			}
 		}
-		index.push_back(std::pair<int,int>(ref_index,target_index));
+		list.push_back(PairPose_t(ref[ref_index].pose,target[target_index].pose));
 
 	}
 
-
 }
+void position2vector(const geometry_msgs::Pose &in, tf::Vector3 &out){
+	out.setX(in.position.x);
+	out.setY(in.position.y);
+	out.setZ(in.position.z);
+}
+double calSectionError(
+	PairPoseList_t &list,
+	int begin,
+	int end){
+
+	int i;
+	double ret=0;
+	tf::Vector3 a_origin,b_origin,a_abs_vec,b_abs_vec,a_rel_vec,b_rel_vec;
+	position2vector(list[begin].first,a_origin);
+	position2vector(list[begin].second,b_origin);
+
+	
+	for(i=begin;i<=end;i++){
+		position2vector(list[i].first,a_abs_vec);
+		position2vector(list[i].second,b_abs_vec);
+		a_rel_vec = a_abs_vec - a_origin;
+		b_rel_vec = b_abs_vec - b_origin;
+		
+		ret+= a_rel_vec.distance2(b_rel_vec);
+	}
+	return ret;
+}
+
+
 
 int main(int argc, char **argv){
 	ros::init(argc, argv, "evaluater");
@@ -113,7 +86,7 @@ int main(int argc, char **argv){
 	std::vector<pose_t> ref_pose,target_pose;
 	pose_t tmp_pose;
 	std::string str;
-	std::vector<std::pair<int,int>> match_pair;
+	PairPoseList_t match_list;
 
 	io::CSVReader<8> target_csv("target.csv");
 	io::CSVReader<8> ref_csv("ref.csv");
@@ -171,14 +144,18 @@ int main(int argc, char **argv){
 	printf("ref_pose col:%zu\n",ref_pose.size());
 	printf("target_pose col:%zu\n",target_pose.size());
 
-	getMatchTimePair(ref_pose,target_pose,match_pair);
+	getMatchTimePair(ref_pose,target_pose,match_list);
 
-	for(int i=0;i<match_pair.size();i++){
-		printf("match pair %d %d\n",match_pair[i].first,match_pair[i].second);
+	
+
+	double result;
+	printf("x,y,error\n");
+	for(int i=0;i<match_list.size();i+=50){
+		result = calSectionError(match_list,i,i+50);
+		printf("%lf,%lf,%lf\n",match_list[i].first.position.x,match_list[i].first.position.y,result);
 	}
 
-	ROS_INFO("start\n");
 
-	ros::spin();
+	//ros::spin();
 	return 0;
 }
