@@ -5,7 +5,7 @@
 #include <tf/transform_listener.h>
 #include "csv.h"
 
-#define MAX_EVALUATION_DISTANCE 2.0 
+#define MAX_EVALUATION_DISTANCE 1.0 
 
 void GetRPY(const geometry_msgs::Quaternion &q,
 		double &roll,double &pitch,double &yaw){
@@ -63,19 +63,27 @@ double calSectionError(
 
 	int i;
 	double ret=0;
+	double dummy,a_yaw,b_yaw,diff_yaw;
 	tf::Vector3 a_origin,b_origin,a_abs_vec,b_abs_vec,a_rel_vec,b_rel_vec;
 	position2vector(list[begin].first,a_origin);
 	position2vector(list[begin].second,b_origin);
 
-
+	GetRPY(list[begin].first.orientation,dummy,dummy,a_yaw);
+	GetRPY(list[begin].second.orientation,dummy,dummy,b_yaw);
+	diff_yaw = b_yaw - a_yaw;
 	for(i=begin;i<=end;i++){
 		position2vector(list[i].first,a_abs_vec);
 		position2vector(list[i].second,b_abs_vec);
 		a_rel_vec = a_abs_vec - a_origin;
 		b_rel_vec = b_abs_vec - b_origin;
 
+		b_rel_vec.setX(b_rel_vec.getX()*cos(diff_yaw)-b_rel_vec.getY()*sin(diff_yaw));
+		b_rel_vec.setY(b_rel_vec.getX()*sin(diff_yaw)+b_rel_vec.getY()*cos(diff_yaw));
+
 		ret+= a_rel_vec.distance2(b_rel_vec);
 	}
+
+	ret = ret/(end-begin+1);//一点当たりの誤差を計算
 	return ret;
 }
 
