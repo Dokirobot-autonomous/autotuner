@@ -5,7 +5,7 @@
 #include <tf/transform_listener.h>
 #include "csv.h"
 
-#define MAX_EVALUATION_DISTANCE 3.0 
+#define MAX_EVALUATION_DISTANCE 2.0 
 
 void GetRPY(const geometry_msgs::Quaternion &q,
 		double &roll,double &pitch,double &yaw){
@@ -20,11 +20,13 @@ struct pose_t {
 	geometry_msgs::Pose pose;
 };
 
+
+
 void getMatchTimePair(
-	std::vector<pose_t> &ref,
-	std::vector<pose_t> &target,
-	PairPoseList_t &list
-	){
+		std::vector<pose_t> &ref,
+		std::vector<pose_t> &target,
+		PairPoseList_t &list
+		){
 
 	int ref_index;
 	int target_index;
@@ -55,9 +57,9 @@ void position2vector(const geometry_msgs::Pose &in, tf::Vector3 &out){
 	out.setZ(in.position.z);
 }
 double calSectionError(
-	PairPoseList_t &list,
-	int begin,
-	int end){
+		PairPoseList_t &list,
+		int begin,
+		int end){
 
 	int i;
 	double ret=0;
@@ -65,19 +67,38 @@ double calSectionError(
 	position2vector(list[begin].first,a_origin);
 	position2vector(list[begin].second,b_origin);
 
-	
+
 	for(i=begin;i<=end;i++){
 		position2vector(list[i].first,a_abs_vec);
 		position2vector(list[i].second,b_abs_vec);
 		a_rel_vec = a_abs_vec - a_origin;
 		b_rel_vec = b_abs_vec - b_origin;
-		
+
 		ret+= a_rel_vec.distance2(b_rel_vec);
 	}
 	return ret;
 }
 
-
+void getErrorAndPoint(PairPoseList_t &list,std::vector<std::tuple<double,double,double>> &errorDataList,double distance){
+	tf::Vector3 previous,current;
+	double error;
+	int i,j;
+	distance *= distance;
+	for(i=0;i<list.size();i=j){
+		
+		position2vector(list[i].first,previous);
+		for(j=i+1;j<list.size();j++){
+			position2vector(list[j].first,current);
+			//printf("j:%d,dis:%lf\n",j,current.distance2(previous));
+			
+			if(distance <= current.distance2(previous)){
+				error = calSectionError(list,i,j);
+				errorDataList.emplace_back(list[i].first.position.x,list[i].first.position.y,error);
+				break;
+			}
+		}
+	}
+}
 
 int main(int argc, char **argv){
 	ros::init(argc, argv, "evaluater");
@@ -146,16 +167,13 @@ int main(int argc, char **argv){
 
 	getMatchTimePair(ref_pose,target_pose,match_list);
 
-	
+	std::vector<std::tuple<double,double,double>> output;
+	getErrorAndPoint(match_list,output,MAX_EVALUATION_DISTANCE);
 
-	double result;
+
 	printf("x,y,error\n");
-	for(int i=0;i<match_list.size();i+=50){
-		result = calSectionError(match_list,i,i+50);
-		printf("%lf,%lf,%lf\n",match_list[i].first.position.x,match_list[i].first.position.y,result);
+	for(int i=0;i<output.size();i++){
+		printf("%lf,%lf,%lf\n",std::get<0>(output[i]),std::get<1>(output[i]),std::get<2>(output[i]));
 	}
-
-
-	//ros::spin();
 	return 0;
 }
