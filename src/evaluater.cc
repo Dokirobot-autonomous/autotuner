@@ -7,19 +7,27 @@
 
 #define MAX_EVALUATION_DISTANCE 1.0 
 
-void GetRPY(const geometry_msgs::Quaternion &q,
-		double &roll,double &pitch,double &yaw){
-	tf::Quaternion quat(q.x,q.y,q.z,q.w);
-	tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-}
 typedef std::pair<geometry_msgs::Pose,geometry_msgs::Pose> PairPose_t;
 typedef std::vector<PairPose_t> PairPoseList_t;
+
 
 struct pose_t {
 	uint64_t stamp;
 	geometry_msgs::Pose pose;
 };
 
+void GetRPY(const geometry_msgs::Quaternion &q,
+		double &roll,double &pitch,double &yaw){
+	tf::Quaternion quat(q.x,q.y,q.z,q.w);
+	tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+}
+
+geometry_msgs::Quaternion rpy_to_geometry_quat(double roll, double pitch, double yaw){
+	tf::Quaternion quat=tf::createQuaternionFromRPY(roll,pitch,yaw);
+	geometry_msgs::Quaternion geometry_quat;
+	quaternionTFToMsg(quat, geometry_quat);
+	return geometry_quat;
+}
 
 
 void getMatchTimePair(
@@ -64,23 +72,25 @@ double calSectionError(
 	int i;
 	double ret=0;
 	double dummy,a_yaw,b_yaw,diff_yaw;
-	tf::Vector3 a_origin,b_origin,a_abs_vec,b_abs_vec,a_rel_vec,b_rel_vec;
+	tf::Vector3 a_origin,b_origin,a_abs_vec,b_abs_vec,a_rel_vec,b_rel_vec,tmp;
 	position2vector(list[begin].first,a_origin);
 	position2vector(list[begin].second,b_origin);
 
 	GetRPY(list[begin].first.orientation,dummy,dummy,a_yaw);
 	GetRPY(list[begin].second.orientation,dummy,dummy,b_yaw);
 	diff_yaw = b_yaw - a_yaw;
+	//printf("---,,,\n");
 	for(i=begin;i<=end;i++){
 		position2vector(list[i].first,a_abs_vec);
 		position2vector(list[i].second,b_abs_vec);
 		a_rel_vec = a_abs_vec - a_origin;
 		b_rel_vec = b_abs_vec - b_origin;
 
-		b_rel_vec.setX(b_rel_vec.getX()*cos(diff_yaw)-b_rel_vec.getY()*sin(diff_yaw));
-		b_rel_vec.setY(b_rel_vec.getX()*sin(diff_yaw)+b_rel_vec.getY()*cos(diff_yaw));
-
-		ret+= a_rel_vec.distance2(b_rel_vec);
+		tmp.setX(b_rel_vec.getX()*cos(-diff_yaw)-b_rel_vec.getY()*sin(-diff_yaw));
+		tmp.setY(b_rel_vec.getX()*sin(-diff_yaw)+b_rel_vec.getY()*cos(-diff_yaw));
+		tmp.setZ(b_rel_vec.getZ());
+		//printf("%lf,%lf,%lf,%lf\n",a_rel_vec.getX(),a_rel_vec.getY(),b_rel_vec.getX(),b_rel_vec.getY());
+		ret+= a_rel_vec.distance2(tmp);
 	}
 
 	ret = ret/(end-begin+1);//一点当たりの誤差を計算
@@ -93,19 +103,36 @@ void getErrorAndPoint(PairPoseList_t &list,std::vector<std::tuple<double,double,
 	int i,j;
 	distance *= distance;
 	for(i=0;i<list.size();i=j){
-		
+
 		position2vector(list[i].first,previous);
 		for(j=i+1;j<list.size();j++){
 			position2vector(list[j].first,current);
 			//printf("j:%d,dis:%lf\n",j,current.distance2(previous));
-			
+
 			if(distance <= current.distance2(previous)){
 				error = calSectionError(list,i,j);
-				errorDataList.emplace_back(list[i].first.position.x,list[i].first.position.y,error);
+				errorDataList.emplace_back(list[(i+j)/2].first.position.x,list[(i+j)/2].first.position.y,error);
 				break;
 			}
 		}
 	}
+}
+
+void changeScalePose(const geometry_msgs::Pose &in, geometry_msgs::Pose &out,double scale){
+	out.position.x = in.position.x * scale;
+	out.position.y = in.position.y * scale;
+	out.position.z = in.position.z * scale;
+	out.orientation = in.orientation;
+}
+
+void changeAnglePose(const geometry_msgs::Pose &in,geometry_msgs::Pose &out,double yaw){
+	double r,p,y;
+	GetRPY(in.orientation,r,p,y);
+	y = y+yaw;
+	out.orientation = rpy_to_geometry_quat(r, p, y);
+	out.position.x = in.position.x*cos(yaw) - in.position.y*sin(yaw);
+	out.position.y = in.position.x*sin(yaw) + in.position.y*cos(yaw);
+	out.position.z = in.position.z;
 }
 
 int main(int argc, char **argv){
@@ -141,7 +168,7 @@ int main(int argc, char **argv){
 			);
 
 
-
+	geometry_msgs::Pose mod_pose;
 	while(target_csv.read_row(
 				str,
 				tmp_pose.pose.position.x,
@@ -154,6 +181,8 @@ int main(int argc, char **argv){
 			){
 		tmp_pose.stamp = std::stoull(str); 
 		//printf("%lu\n",tmp_pose.stamp);
+		changeScalePose(tmp_pose.pose,mod_pose,1.02);
+		changeAnglePose(mod_pose,tmp_pose.pose,-0.01);
 		target_pose.push_back(tmp_pose);
 	}
 	while(ref_csv.read_row(
@@ -177,7 +206,6 @@ int main(int argc, char **argv){
 
 	std::vector<std::tuple<double,double,double>> output;
 	getErrorAndPoint(match_list,output,MAX_EVALUATION_DISTANCE);
-
 
 	printf("x,y,error\n");
 	for(int i=0;i<output.size();i++){
