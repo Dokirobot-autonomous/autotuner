@@ -3,6 +3,7 @@
 #include <utility> //pair
 #include <math.h>
 #include <tf/transform_listener.h>
+#include <fstream> //ofstream
 #include "csv.h"
 
 #define MAX_EVALUATION_DISTANCE 1.0 
@@ -48,13 +49,14 @@ void getMatchTimePair(
 			target_stamp = target[target_index].stamp;
 			if(ref_stamp >= target_stamp) delta = ref_stamp - target_stamp;
 			else delta = target_stamp - ref_stamp;
-			if(delta<min) min = delta;
+			if(delta<=min) min = delta;
 			else {
 				target_index--;
 				break;
 			}
 		}
-		list.push_back(PairPose_t(ref[ref_index].pose,target[target_index].pose));
+		//printf("index:%d\n",target_index);
+		list.emplace_back(ref[ref_index].pose,target[target_index].pose);
 
 	}
 
@@ -71,21 +73,23 @@ double calSectionError(
 
 	int i;
 	double ret=0;
-	double dummy,a_yaw,b_yaw,diff_yaw;
+	double dummy_r,dummy_p,a_yaw,b_yaw,diff_yaw;
 	tf::Vector3 a_origin,b_origin,a_abs_vec,b_abs_vec,a_rel_vec,b_rel_vec,tmp;
 	position2vector(list[begin].first,a_origin);
 	position2vector(list[begin].second,b_origin);
 
-	GetRPY(list[begin].first.orientation,dummy,dummy,a_yaw);
-	GetRPY(list[begin].second.orientation,dummy,dummy,b_yaw);
+	GetRPY(list[begin].first.orientation,dummy_r,dummy_p,a_yaw);
+	GetRPY(list[begin].second.orientation,dummy_r,dummy_p,b_yaw);
 	diff_yaw = b_yaw - a_yaw;
+	printf("a_yaw=%lf\n",a_yaw/(2*3.14)*360);
+	printf("b_yaw=%lf\n",b_yaw/(2*3.14)*360);
+	printf("diff_yaw=%lf\n",diff_yaw/(2*3.14)*360);
 	//printf("---,,,\n");
 	for(i=begin;i<=end;i++){
 		position2vector(list[i].first,a_abs_vec);
 		position2vector(list[i].second,b_abs_vec);
 		a_rel_vec = a_abs_vec - a_origin;
 		b_rel_vec = b_abs_vec - b_origin;
-
 		tmp.setX(b_rel_vec.getX()*cos(-diff_yaw)-b_rel_vec.getY()*sin(-diff_yaw));
 		tmp.setY(b_rel_vec.getX()*sin(-diff_yaw)+b_rel_vec.getY()*cos(-diff_yaw));
 		tmp.setZ(b_rel_vec.getZ());
@@ -127,25 +131,33 @@ void changeScalePose(const geometry_msgs::Pose &in, geometry_msgs::Pose &out,dou
 
 void changeAnglePose(const geometry_msgs::Pose &in,geometry_msgs::Pose &out,double yaw){
 	double r,p,y;
-	GetRPY(in.orientation,r,p,y);
-	y = y+yaw;
-	out.orientation = rpy_to_geometry_quat(r, p, y);
+	//GetRPY(in.orientation,r,p,y);
+	//y = y+yaw;
+	//out.orientation = rpy_to_geometry_quat(r, p, y);
+	out.orientation = in.orientation;
 	out.position.x = in.position.x*cos(yaw) - in.position.y*sin(yaw);
 	out.position.y = in.position.x*sin(yaw) + in.position.y*cos(yaw);
 	out.position.z = in.position.z;
 }
 
 int main(int argc, char **argv){
-	ros::init(argc, argv, "evaluater");
+	if(argc < 6){
+		printf("arg error\n");
+		printf("example: ref.csv target.csv distance scale angle\n");
+		return -1;
+	}
+	//ros::init(argc, argv, "evaluater");
+	//ros::NodeHandle n;
 
-	ros::NodeHandle n;
 	std::vector<pose_t> ref_pose,target_pose;
 	pose_t tmp_pose;
 	std::string str;
 	PairPoseList_t match_list;
 
-	io::CSVReader<8> target_csv("target.csv");
-	io::CSVReader<8> ref_csv("ref.csv");
+	std::ofstream outfile("out.csv");
+
+	io::CSVReader<8> target_csv(argv[2]);
+	io::CSVReader<8> ref_csv(argv[1]);
 	target_csv.read_header(io::ignore_extra_column,
 			"field.header.stamp",
 			"field.pose.position.x",
@@ -181,8 +193,8 @@ int main(int argc, char **argv){
 			){
 		tmp_pose.stamp = std::stoull(str); 
 		//printf("%lu\n",tmp_pose.stamp);
-		changeScalePose(tmp_pose.pose,mod_pose,1.02);
-		changeAnglePose(mod_pose,tmp_pose.pose,-0.01);
+		changeScalePose(tmp_pose.pose,mod_pose,atof(argv[4]));
+		changeAnglePose(mod_pose,tmp_pose.pose,atof(argv[5]));
 		target_pose.push_back(tmp_pose);
 	}
 	while(ref_csv.read_row(
@@ -201,15 +213,23 @@ int main(int argc, char **argv){
 	}
 	printf("ref_pose col:%zu\n",ref_pose.size());
 	printf("target_pose col:%zu\n",target_pose.size());
+/*	
+	for(int i=0;i<target_pose.size();i++){
+		double r,p,y;
+		GetRPY(target_pose[i].pose.orientation,r,p,y);
+		printf("yaw:%lf\n",y/2/3.14*360);
+	}
+	*/
 
 	getMatchTimePair(ref_pose,target_pose,match_list);
 
 	std::vector<std::tuple<double,double,double>> output;
-	getErrorAndPoint(match_list,output,MAX_EVALUATION_DISTANCE);
+	getErrorAndPoint(match_list,output,atof(argv[3]));
 
-	printf("x,y,error\n");
+	outfile << "x,y,error\n";
 	for(int i=0;i<output.size();i++){
-		printf("%lf,%lf,%lf\n",std::get<0>(output[i]),std::get<1>(output[i]),std::get<2>(output[i]));
+		outfile << std::get<0>(output[i]) << ',' << std::get<1>(output[i]) << ',' << std::get<2>(output[i]) << std::endl;
 	}
+	outfile.close();
 	return 0;
 }
