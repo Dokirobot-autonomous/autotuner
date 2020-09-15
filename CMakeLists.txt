@@ -136,6 +136,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_evaluater_node src/evaluater.cc)
 add_executable(${PROJECT_NAME}_makeCSV_node src/makeCSV.cc)
+add_executable(${PROJECT_NAME}_bagplayer_node src/bagPlayer.cc)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +153,9 @@ target_link_libraries(${PROJECT_NAME}_evaluater_node
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_makeCSV_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(${PROJECT_NAME}_bagplayer_node
   ${catkin_LIBRARIES}
 )
 

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <vector>
@@ -75,6 +76,7 @@ int main(int argc, char **argv){
 	insert_label();
 	ros::ServiceServer service = n.advertiseService("saveCSV",saveCSV);
 	ROS_INFO("start\n");
+	system("sleep 10");
 
 	ros::spin();
 	return 0;
