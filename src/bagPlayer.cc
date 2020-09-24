@@ -22,6 +22,7 @@ int main(int argc,char **argv){
 	ros::NodeHandle n;
 	pub = n.advertise<std_msgs::Empty>("done", 1000);
 	ros::Subscriber sub = n.subscribe("play",1000,playRosbag);
+	ROS_INFO("start\n");
 
 	ros::spin();
 	return 0;	
