@@ -12,6 +12,50 @@ typedef std::pair<geometry_msgs::Pose,geometry_msgs::Pose> PairPose_t;
 typedef std::vector<PairPose_t> PairPoseList_t;
 
 
+class evalData_t {
+	public:
+		void save(const char *filename);	
+		void clear(void);
+		void insert(double x,double y,double error);
+	private:
+		//評価結果
+		std::vector<std::tuple<int,double,double,double>> data; //seq,x,y,error
+
+		//parameters
+		int nFeatures;
+		double scaleFactor;
+		int nLevels;
+		int iniThFAST;
+		int minThFAST;
+
+};
+
+void evalData_t::insert(double x,double y,double error){
+	data.emplace_back(data.size(),x,y,error);
+}
+
+void evalData_t::clear(void){
+	data.clear();
+	nFeatures = 0;
+	scaleFactor = 0.0;
+	nLevels = 0;
+	iniThFAST = 0;
+	minThFAST = 0;
+}
+
+void evalData_t::save(const char *filename){
+	std::ofstream out(filename);
+	int i;
+	out << "seq,x,y,error,nFeatures,scaleFactor,nLevels,iniThFAST,minThFAST" << std::endl;
+	for(i=0;i<data.size();i++){
+		out << std::get<0>(data[i]) << ',' << std::get<1>(data[i]) << ',' << std::get<2>(data[i]) << ',' << std::get<3>(data[i]);
+		if(i==0) out << ',' << nFeatures << ',' << scaleFactor << ',' << nLevels << ',' << iniThFAST << ',' << minThFAST << std::endl;
+		else out << ",,,,," << std::endl;
+	}
+
+	out.close();
+}
+
 struct pose_t {
 	uint64_t stamp;
 	geometry_msgs::Pose pose;
@@ -81,10 +125,7 @@ double calSectionError(
 	GetRPY(list[begin].first.orientation,dummy_r,dummy_p,a_yaw);
 	GetRPY(list[begin].second.orientation,dummy_r,dummy_p,b_yaw);
 	diff_yaw = b_yaw - a_yaw;
-	printf("a_yaw=%lf\n",a_yaw/(2*3.14)*360);
-	printf("b_yaw=%lf\n",b_yaw/(2*3.14)*360);
-	printf("diff_yaw=%lf\n",diff_yaw/(2*3.14)*360);
-	//printf("---,,,\n");
+
 	for(i=begin;i<=end;i++){
 		position2vector(list[i].first,a_abs_vec);
 		position2vector(list[i].second,b_abs_vec);
@@ -101,7 +142,7 @@ double calSectionError(
 	return ret;
 }
 
-void getErrorAndPoint(PairPoseList_t &list,std::vector<std::tuple<double,double,double>> &errorDataList,double distance){
+void getErrorAndPoint(PairPoseList_t &list,evalData_t &data,double distance){
 	tf::Vector3 previous,current;
 	double error;
 	int i,j;
@@ -111,11 +152,11 @@ void getErrorAndPoint(PairPoseList_t &list,std::vector<std::tuple<double,double,
 		position2vector(list[i].first,previous);
 		for(j=i+1;j<list.size();j++){
 			position2vector(list[j].first,current);
-			//printf("j:%d,dis:%lf\n",j,current.distance2(previous));
 
 			if(distance <= current.distance2(previous)){
 				error = calSectionError(list,i,j);
-				errorDataList.emplace_back(list[(i+j)/2].first.position.x,list[(i+j)/2].first.position.y,error);
+				data.insert(list[i].first.position.x,list[i].first.position.y,error);
+				
 				break;
 			}
 		}
@@ -153,8 +194,6 @@ int main(int argc, char **argv){
 	pose_t tmp_pose;
 	std::string str;
 	PairPoseList_t match_list;
-
-	std::ofstream outfile("out.csv");
 
 	io::CSVReader<8> target_csv(argv[2]);
 	io::CSVReader<8> ref_csv(argv[1]);
@@ -223,13 +262,9 @@ int main(int argc, char **argv){
 
 	getMatchTimePair(ref_pose,target_pose,match_list);
 
-	std::vector<std::tuple<double,double,double>> output;
+	evalData_t output;
 	getErrorAndPoint(match_list,output,atof(argv[3]));
+	output.save("out.csv");
 
-	outfile << "x,y,error\n";
-	for(int i=0;i<output.size();i++){
-		outfile << std::get<0>(output[i]) << ',' << std::get<1>(output[i]) << ',' << std::get<2>(output[i]) << std::endl;
-	}
-	outfile.close();
 	return 0;
 }

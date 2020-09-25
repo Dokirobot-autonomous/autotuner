@@ -74,10 +74,8 @@ void odomData::insertLabel(void){
 
 //global variables
 odomData odom;
-std::string csv_filename;
-const int MAX_ROW= 11;
 bool done_signal = false;
-
+time_t t_start,t_end;
 
 struct range_t {
 	double begin,end,level;
@@ -145,8 +143,8 @@ void getDoneSignal(const std_msgs::Empty &msg){
 	done_signal = true;
 }
 void callback(const geometry_msgs::PoseStampedConstPtr &topic){
-	ROS_INFO("call back\n");
 	odom.insertFromPoseStamped(topic);	
+	t_start = time(NULL);
 }
 
 void saveParam(const param_t &in,const char *filename){
@@ -171,7 +169,6 @@ int main(int argc, char **argv){
 	ros::Publisher pub_play_signal = n.advertise<std_msgs::String>("/play",1000);
 	ros::ServiceClient callreset = n.serviceClient<std_srvs::Empty>("/orb_slam2_stereo/reset");
 	std_srvs::Empty srv;
-	callreset.call(srv); //orb slam2初期化
 	ROS_INFO("start\n");
 	ros::Rate loop_rate(10);
 
@@ -183,11 +180,12 @@ int main(int argc, char **argv){
 
 	setParamList(nf,sf,it,mt,nl,paramList);
 	printf("paramList.size:%d\n",paramList.size());
-
+	printf("Press Enter\n");
 	getchar();
 	printParam(paramList[0]);
 	setParam(paramList[0]); //parameter反映
-	callreset.call(srv);
+	callreset.call(srv);//orb slam2初期化
+	sleep(1);
 	msg.data = bagfilename;//再生するbagfileを設定
 	pub_play_signal.publish(msg);//bagfile再生
 
@@ -195,21 +193,19 @@ int main(int argc, char **argv){
 
 //main loop
 	while(ros::ok()){
-		
-		if(done_signal){ //bagfileの再生が終わったら
-			//set parameter
+		t_end = time(NULL);
+		if(done_signal && t_end-t_start > 10){ //bagfileの再生が終わったら
+			
 			//csvファイル名を設定
 			ss.str("");
 			ss.clear(std::stringstream::goodbit);
 			ss << basefilename << file_count << ".csv";
-			csv_filename = ss.str();
-			odom.save(csv_filename.c_str()); //odometryをcsvで保存
+			odom.save(ss.str().c_str()); //odometryをcsvで保存
 
 			ss.str("");
 			ss.clear(std::stringstream::goodbit);
 			ss << basefilename << "param_" << file_count << ".csv";
-			csv_filename = ss.str();
-			saveParam(paramList[file_count],csv_filename.c_str());
+			saveParam(paramList[file_count],ss.str().c_str());
 
 			//次の処理
 			file_count++;
