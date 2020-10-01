@@ -20,6 +20,7 @@ class evalData_t {
 		void setParam(int nF,double sF,int nL,int iT,int mT);
 		void load(const char *filename,evalData_t &out);
 		void loadParam(const char *filename);
+		double getError(int seq);
 	private:
 		//評価結果
 		std::vector<std::tuple<int,double,double,double>> data; //seq,x,y,error
@@ -33,6 +34,9 @@ class evalData_t {
 
 };
 
+double evalData_t::getError(int seq){
+	return std::get<3>(data[seq]);
+}
 
 void evalData_t::setParam(int nF,double sF,int nL,int iT,int mT){
 	nFeatures = nF;
@@ -254,6 +258,7 @@ int main(int argc, char **argv){
 	std::string str;
 	std::stringstream target_odom_filename,target_param_filename;
 	PairPoseList_t match_list;
+	std::vector<evalData_t> evalDataList;
 
 	
 	//referenceの読み込み
@@ -286,13 +291,17 @@ int main(int argc, char **argv){
 
 	num_targetfile = atoi(argv[6]); //targetのファイル数を取得
 	geometry_msgs::Pose mod_pose;
-	evalData_t output;
+	evalData_t eval_data;
+	int cnt=0;
 	for(int i=0;i<=num_targetfile;i++){
-		// バッファをクリア
+		match_list.clear();
+		eval_data.clear();
+		target_pose.clear();
+
 		target_odom_filename.str("");
-		// 状態をクリア
 		target_odom_filename.clear(std::stringstream::goodbit);
 		target_odom_filename << target_basename << i << ".csv";
+
 		printf("Load target odom:%s\n",target_odom_filename.str().c_str());
 		//tagetの読み込み
 		io::CSVReader<8> target_csv(target_odom_filename.str().c_str());
@@ -329,14 +338,31 @@ int main(int argc, char **argv){
 		target_param_filename.clear(std::stringstream::goodbit);
 		target_param_filename << target_basename << "param_" << i << ".csv";
 		printf("Load target param:%s\n",target_param_filename.str().c_str());
-		output.loadParam(target_param_filename.str().c_str());
+		eval_data.loadParam(target_param_filename.str().c_str());
 
 		printf("target_pose col:%zu\n",target_pose.size());
 		getMatchTimePair(ref_pose,target_pose,match_list);
 
-		getErrorAndPoint(match_list,output,atof(argv[3]));
-		
+		getErrorAndPoint(match_list,eval_data,atof(argv[3])); //評価値を格納
+		std::string name;
+		name = "evaldata" + std::to_string(cnt) + ".csv";
+		eval_data.save(name.c_str());
+		evalDataList.push_back(eval_data);	
+		cnt++;
 	}
+
+	//seq=0で評価値を比較
+	int index=0;
+	double error;
+	for(int i=0;i<evalDataList.size();i++){
+		if(i==0) error = evalDataList[i].getError(0);
+		else if(error > evalDataList[i].getError(0)) {
+			error = evalDataList[i].getError(0);
+			index = i;
+		}
+	}
+	printf("index=%d error=%lf\n",index,error);
+
 
 	return 0;
 }
