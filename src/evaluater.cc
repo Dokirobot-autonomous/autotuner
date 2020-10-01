@@ -17,6 +17,9 @@ class evalData_t {
 		void save(const char *filename);	
 		void clear(void);
 		void insert(double x,double y,double error);
+		void setParam(int nF,double sF,int nL,int iT,int mT);
+		void load(const char *filename,evalData_t &out);
+		void loadParam(const char *filename);
 	private:
 		//評価結果
 		std::vector<std::tuple<int,double,double,double>> data; //seq,x,y,error
@@ -30,6 +33,15 @@ class evalData_t {
 
 };
 
+
+void evalData_t::setParam(int nF,double sF,int nL,int iT,int mT){
+	nFeatures = nF;
+	scaleFactor = sF;
+	nLevels = nL;
+	iniThFAST = iT;
+	minThFAST = mT;
+}
+	
 void evalData_t::insert(double x,double y,double error){
 	data.emplace_back(data.size(),x,y,error);
 }
@@ -55,6 +67,52 @@ void evalData_t::save(const char *filename){
 
 	out.close();
 }
+
+void evalData_t::loadParam(const char *filename){
+	io::CSVReader<5> in(filename);
+	in.read_header(io::ignore_extra_column,"nFeatures","scaleFactor","nLevels","iniThFAST","minThFAST");
+	in.read_row(nFeatures,scaleFactor,nLevels,iniThFAST,minThFAST);
+}
+
+void evalData_t::load(const char *filename,evalData_t &out){
+	io::CSVReader<9> file(filename);
+	file.read_header(io::ignore_extra_column,
+	"seq",
+	"x",
+	"y",
+	"error",
+	"nFeatures",
+	"scaleFactor",
+	"nLevels",
+	"iniThFAST",
+	"minThFAST"
+	);
+	int i=0;
+	int seq;
+	double x,y,error;
+
+	int nF,nL,iT,mT;
+	double sF;
+
+	while(file.read_row(
+		seq,
+		x,
+		y,
+		error,
+		nF,
+		sF,
+		nL,
+		iT,
+		mT
+		)){
+		if(i=0) setParam(nF,sF,nL,iT,mT);
+		insert(x,y,error);
+
+	}
+	
+
+}
+
 
 struct pose_t {
 	uint64_t stamp;
@@ -184,29 +242,22 @@ void changeAnglePose(const geometry_msgs::Pose &in,geometry_msgs::Pose &out,doub
 int main(int argc, char **argv){
 	if(argc < 6){
 		printf("arg error\n");
-		printf("example: ref.csv target.csv distance scale angle\n");
+		printf("example: ref.csv target_basename distance scale angle target_file_num\n");
 		return -1;
 	}
 	//ros::init(argc, argv, "evaluater");
 	//ros::NodeHandle n;
-
+	char *target_basename = argv[2];
+	int num_targetfile;
 	std::vector<pose_t> ref_pose,target_pose;
 	pose_t tmp_pose;
 	std::string str;
+	std::stringstream target_odom_filename,target_param_filename;
 	PairPoseList_t match_list;
 
-	io::CSVReader<8> target_csv(argv[2]);
+	
+	//referenceの読み込み
 	io::CSVReader<8> ref_csv(argv[1]);
-	target_csv.read_header(io::ignore_extra_column,
-			"field.header.stamp",
-			"field.pose.position.x",
-			"field.pose.position.y",
-			"field.pose.position.z",
-			"field.orientation.x",
-			"field.orientation.y",
-			"field.orientation.z",
-			"field.orientation.w"
-			);
 	ref_csv.read_header(io::ignore_extra_column,
 			"field.header.stamp",
 			"field.pose.pose.position.x",
@@ -217,25 +268,6 @@ int main(int argc, char **argv){
 			"field.pose.pose.orientation.z",
 			"field.pose.pose.orientation.w"
 			);
-
-
-	geometry_msgs::Pose mod_pose;
-	while(target_csv.read_row(
-				str,
-				tmp_pose.pose.position.x,
-				tmp_pose.pose.position.y,
-				tmp_pose.pose.position.z,
-				tmp_pose.pose.orientation.x,
-				tmp_pose.pose.orientation.y,	
-				tmp_pose.pose.orientation.z,
-				tmp_pose.pose.orientation.w)
-			){
-		tmp_pose.stamp = std::stoull(str); 
-		//printf("%lu\n",tmp_pose.stamp);
-		changeScalePose(tmp_pose.pose,mod_pose,atof(argv[4]));
-		changeAnglePose(mod_pose,tmp_pose.pose,atof(argv[5]));
-		target_pose.push_back(tmp_pose);
-	}
 	while(ref_csv.read_row(
 				str,
 				tmp_pose.pose.position.x,
@@ -250,21 +282,61 @@ int main(int argc, char **argv){
 		tmp_pose.stamp = std::stoull(str); 
 		ref_pose.push_back(tmp_pose);
 	}
-	printf("ref_pose col:%zu\n",ref_pose.size());
-	printf("target_pose col:%zu\n",target_pose.size());
-/*	
-	for(int i=0;i<target_pose.size();i++){
-		double r,p,y;
-		GetRPY(target_pose[i].pose.orientation,r,p,y);
-		printf("yaw:%lf\n",y/2/3.14*360);
-	}
-	*/
+	
 
-	getMatchTimePair(ref_pose,target_pose,match_list);
-
+	num_targetfile = atoi(argv[6]); //targetのファイル数を取得
+	geometry_msgs::Pose mod_pose;
 	evalData_t output;
-	getErrorAndPoint(match_list,output,atof(argv[3]));
-	output.save("out.csv");
+	for(int i=0;i<=num_targetfile;i++){
+		// バッファをクリア
+		target_odom_filename.str("");
+		// 状態をクリア
+		target_odom_filename.clear(std::stringstream::goodbit);
+		target_odom_filename << target_basename << i << ".csv";
+		printf("Load target odom:%s\n",target_odom_filename.str().c_str());
+		//tagetの読み込み
+		io::CSVReader<8> target_csv(target_odom_filename.str().c_str());
+		target_csv.read_header(io::ignore_extra_column,
+				"field.header.stamp",
+				"field.pose.position.x",
+				"field.pose.position.y",
+				"field.pose.position.z",
+				"field.orientation.x",
+				"field.orientation.y",
+				"field.orientation.z",
+				"field.orientation.w"
+				);
+		while(target_csv.read_row(
+					str,
+					tmp_pose.pose.position.x,
+					tmp_pose.pose.position.y,
+					tmp_pose.pose.position.z,
+					tmp_pose.pose.orientation.x,
+					tmp_pose.pose.orientation.y,	
+					tmp_pose.pose.orientation.z,
+					tmp_pose.pose.orientation.w)
+				){
+			tmp_pose.stamp = std::stoull(str); 
+			//printf("%lu\n",tmp_pose.stamp);
+			changeScalePose(tmp_pose.pose,mod_pose,atof(argv[4]));
+			changeAnglePose(mod_pose,tmp_pose.pose,atof(argv[5]));
+			target_pose.push_back(tmp_pose);
+		}
+
+
+		//Parameter読みこみ
+		target_param_filename.str("");
+		target_param_filename.clear(std::stringstream::goodbit);
+		target_param_filename << target_basename << "param_" << i << ".csv";
+		printf("Load target param:%s\n",target_param_filename.str().c_str());
+		output.loadParam(target_param_filename.str().c_str());
+
+		printf("target_pose col:%zu\n",target_pose.size());
+		getMatchTimePair(ref_pose,target_pose,match_list);
+
+		getErrorAndPoint(match_list,output,atof(argv[3]));
+		
+	}
 
 	return 0;
 }
