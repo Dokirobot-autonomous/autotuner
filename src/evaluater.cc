@@ -12,7 +12,7 @@ typedef std::pair<geometry_msgs::Pose,geometry_msgs::Pose> PairPose_t;
 typedef std::vector<PairPose_t> PairPoseList_t;
 
 
-class evalData_t {
+class evalData_t { //referenceと比較した区間ごとの評価値を格納するクラス
 	public:
 		void save(const char *filename);	
 		void clear(void);
@@ -20,6 +20,7 @@ class evalData_t {
 		void setParam(int nF,double sF,int nL,int iT,int mT);
 		void load(const char *filename,evalData_t &out);
 		void loadParam(const char *filename);
+		void printParam(void);
 		double getError(int seq);
 	private:
 		//評価結果
@@ -114,6 +115,32 @@ void evalData_t::load(const char *filename,evalData_t &out){
 
 	}
 	
+
+}
+
+void evalData_t::printParam(void){
+	printf("nFeatures:%d\n",nFeatures);
+	printf("scaleFactor:%lf\n",scaleFactor);
+	printf("nLevels:%d\n",nLevels);
+	printf("iniThFAST:%d\n",iniThFAST);
+	printf("minThFAST:%d\n",minThFAST);
+}
+
+void printResult(std::vector<evalData_t> &evalDataList,int seq){
+	
+	//seq=0で評価値を比較
+	int index=0;
+	double error;
+	for(int i=0;i<evalDataList.size();i++){
+		if(i==0) error = evalDataList[i].getError(seq);
+		else if(error > evalDataList[i].getError(seq)) {
+			error = evalDataList[i].getError(seq);
+			index = i;
+		}
+	}
+	printf("seq:%d\n",seq);
+	printf("minerror%lf\n",error);
+	evalDataList[index].printParam();
 
 }
 
@@ -351,18 +378,8 @@ int main(int argc, char **argv){
 		cnt++;
 	}
 
-	//seq=0で評価値を比較
-	int index=0;
-	double error;
-	for(int i=0;i<evalDataList.size();i++){
-		if(i==0) error = evalDataList[i].getError(0);
-		else if(error > evalDataList[i].getError(0)) {
-			error = evalDataList[i].getError(0);
-			index = i;
-		}
+	for(int i=0;i<3;i++){
+		printResult(evalDataList,i);
 	}
-	printf("index=%d error=%lf\n",index,error);
-
-
 	return 0;
 }
