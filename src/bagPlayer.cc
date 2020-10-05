@@ -10,7 +10,7 @@ void playRosbag(const std_msgs::String::ConstPtr& msg){
 	std::string cmd;
 	std::stringstream ss;
 	std_msgs::Empty done;
-	ss << "rosbag play " << msg->data << " -r 2.0"  ;
+	ss << "rosbag play " << msg->data << " -r 1.0"  ;
 	cmd = ss.str();
 	ROS_INFO("execute cmd\n");
 	system(cmd.c_str());
