@@ -150,13 +150,6 @@ struct pose_t {
 	geometry_msgs::Pose pose;
 };
 
-class Odometry_C{
-	private:
-		std::vector<pose_t> odom;
-	public:
-		
-
-}
 
 void GetRPY(const geometry_msgs::Quaternion &q,
 		double &roll,double &pitch,double &yaw){

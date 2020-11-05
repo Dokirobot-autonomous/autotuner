@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   std_msgs
 	tf
-	message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -105,7 +104,7 @@ add_service_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES autotuning
-	CATKIN_DEPENDS roscpp std_msgs message_runtime
+	CATKIN_DEPENDS roscpp std_msgs 
 #  DEPENDS system_lib
 )
 
@@ -119,7 +118,7 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-
+include_directories("/usr/include/eigen3")
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/autotuning.cpp
@@ -133,9 +132,12 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_evaluater_node src/evaluater.cc)
-add_executable(${PROJECT_NAME}_makeCSV_node src/makeCSV.cc)
-add_executable(${PROJECT_NAME}_bagplayer_node src/bagPlayer.cc)
+add_executable(${PROJECT_NAME}_evaluater_node
+	src/Odometry.cc
+	src/Pose.cc
+	src/Evaluater.cc
+
+	)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,12 +151,6 @@ add_executable(${PROJECT_NAME}_bagplayer_node src/bagPlayer.cc)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_evaluater_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(${PROJECT_NAME}_makeCSV_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(${PROJECT_NAME}_bagplayer_node
   ${catkin_LIBRARIES}
 )
 
