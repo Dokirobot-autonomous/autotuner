@@ -1,0 +1,250 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AsynchronousReader	csv.h	/^                class AsynchronousReader{$/;"	c	namespace:io::detail
+ByteSourceBase	csv.h	/^        class ByteSourceBase{$/;"	c	namespace:io
+CSVReader	csv.h	/^                explicit CSVReader(Args&&...args):in(std::forward<Args>(args)...){$/;"	f	class:io::CSVReader
+CSVReader	csv.h	/^        class CSVReader{$/;"	c	namespace:io
+CSV_H	csv.h	33;"	d
+FILETYPE	Odometry.h	/^enum FILETYPE{$/;"	g
+GetRPY	Odometry.cc	/^static void GetRPY(const geometry_msgs::Quaternion &q,$/;"	f	file:
+GetRPY	evaluater.cc	/^void GetRPY(const geometry_msgs::Quaternion &q,$/;"	f
+LineReader	csv.h	/^                LineReader(const char*file_name, FILE*file){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const char*file_name, const char*data_begin, const char*data_end){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const char*file_name, std::istream&in){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const char*file_name, std::unique_ptr<ByteSourceBase>byte_source){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const std::string&file_name, FILE*file){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const std::string&file_name, const char*data_begin, const char*data_end){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const std::string&file_name, std::istream&in){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                LineReader(const std::string&file_name, std::unique_ptr<ByteSourceBase>byte_source){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                explicit LineReader(const char*file_name){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^                explicit LineReader(const std::string&file_name){$/;"	f	class:io::LineReader
+LineReader	csv.h	/^        class LineReader{$/;"	c	namespace:io
+MAX_EVALUATION_DISTANCE	evaluater.cc	9;"	d	file:
+NonOwningIStreamByteSource	csv.h	/^                        explicit NonOwningIStreamByteSource(std::istream&in):in(in){}$/;"	f	class:io::detail::NonOwningIStreamByteSource
+NonOwningIStreamByteSource	csv.h	/^                class NonOwningIStreamByteSource : public ByteSourceBase{$/;"	c	namespace:io::detail
+NonOwningStringByteSource	csv.h	/^                        NonOwningStringByteSource(const char*str, long long size):str(str), remaining_byte_count(size){}$/;"	f	class:io::detail::NonOwningStringByteSource
+NonOwningStringByteSource	csv.h	/^                class NonOwningStringByteSource : public ByteSourceBase{$/;"	c	namespace:io::detail
+ODOMETRY_H	Odometry.h	2;"	d
+Odometry_C	Odometry.h	/^class Odometry_C{$/;"	c
+OwningStdIOByteSourceBase	csv.h	/^                        explicit OwningStdIOByteSourceBase(FILE*file):file(file){$/;"	f	class:io::detail::OwningStdIOByteSourceBase
+OwningStdIOByteSourceBase	csv.h	/^                class OwningStdIOByteSourceBase : public ByteSourceBase{$/;"	c	namespace:io::detail
+POSE_H	Pose.h	2;"	d
+PairPoseList_t	evaluater.cc	/^typedef std::vector<PairPose_t> PairPoseList_t;$/;"	t	file:
+PairPose_t	evaluater.cc	/^typedef std::pair<geometry_msgs::Pose,geometry_msgs::Pose> PairPose_t;$/;"	t	file:
+Pose_C	Pose.cc	/^Pose_C::Pose_C(uint64_t time_,Eigen::Vector3d pos_,double roll_,double pitch_,double yaw_){$/;"	f	class:Pose_C
+Pose_C	Pose.h	/^class Pose_C{$/;"	c
+SynchronousReader	csv.h	/^                class SynchronousReader{$/;"	c	namespace:io::detail
+TYPE_ODOMETRY	Odometry.h	/^	TYPE_ODOMETRY,$/;"	e	enum:FILETYPE
+TYPE_POSE	Odometry.h	/^	TYPE_POSE$/;"	e	enum:FILETYPE
+base	csv.h	/^                struct base : std::exception{$/;"	s	namespace:io::error
+block_len	csv.h	/^                static const int block_len = 1<<20;$/;"	m	class:io::LineReader
+buffer	csv.h	/^                        char*buffer;$/;"	m	class:io::detail::AsynchronousReader
+buffer	csv.h	/^                        char*buffer;$/;"	m	class:io::detail::SynchronousReader
+buffer	csv.h	/^                std::unique_ptr<char[]>buffer; \/\/ must be constructed before (and thus destructed after) the reader!$/;"	m	class:io::LineReader
+byte_source	csv.h	/^                        std::unique_ptr<ByteSourceBase>byte_source;$/;"	m	class:io::detail::AsynchronousReader
+byte_source	csv.h	/^                        std::unique_ptr<ByteSourceBase>byte_source;$/;"	m	class:io::detail::SynchronousReader
+calSectionError	evaluater.cc	/^double calSectionError($/;"	f
+can_not_open_file	csv.h	/^                struct can_not_open_file :$/;"	s	namespace:io::error
+changeAnglePose	evaluater.cc	/^void changeAnglePose(const geometry_msgs::Pose &in,geometry_msgs::Pose &out,double yaw){$/;"	f
+changeScalePose	evaluater.cc	/^void changeScalePose(const geometry_msgs::Pose &in, geometry_msgs::Pose &out,double scale){$/;"	f
+chop_next_column	csv.h	/^                void chop_next_column($/;"	f	namespace:io::detail
+clear	evaluater.cc	/^void evalData_t::clear(void){$/;"	f	class:evalData_t
+col_order	csv.h	/^                std::vector<int>col_order;$/;"	m	class:io::CSVReader
+column_content	csv.h	/^                        char column_content[max_column_content_length+1];$/;"	m	struct:io::error::with_column_content
+column_name	csv.h	/^                        char column_name[max_column_name_length+1];$/;"	m	struct:io::error::with_column_name
+column_names	csv.h	/^                std::string column_names[column_count];$/;"	m	class:io::CSVReader
+data	evaluater.cc	/^		std::vector<std::tuple<int,double,double,double>> data; \/\/seq,x,y,error$/;"	m	class:evalData_t	file:
+data_begin	csv.h	/^                int data_begin;$/;"	m	class:io::LineReader
+data_end	csv.h	/^                int data_end;$/;"	m	class:io::LineReader
+desired_byte_count	csv.h	/^                        int desired_byte_count;$/;"	m	class:io::detail::AsynchronousReader
+desired_byte_count	csv.h	/^                        int desired_byte_count;$/;"	m	class:io::detail::SynchronousReader
+detail	csv.h	/^        namespace detail{$/;"	n	namespace:io
+double_quote_escape	csv.h	/^        struct double_quote_escape{$/;"	s	namespace:io
+duplicated_column_in_header	csv.h	/^                struct duplicated_column_in_header :$/;"	s	namespace:io::error
+empty_line_comment	csv.h	/^        struct empty_line_comment{$/;"	s	namespace:io
+errno_value	csv.h	/^                        int errno_value;$/;"	m	struct:io::error::with_errno
+error	csv.h	/^        namespace error{$/;"	n	namespace:io
+error_message_buffer	csv.h	/^                        mutable char error_message_buffer[512];$/;"	m	struct:io::error::base
+escaped_string_not_closed	csv.h	/^                struct escaped_string_not_closed :$/;"	s	namespace:io::error
+evalData_t	evaluater.cc	/^class evalData_t { \/\/referenceと比較した区間ごとの評価値を格納するクラス$/;"	c	file:
+extra_column_in_header	csv.h	/^                struct extra_column_in_header :$/;"	s	namespace:io::error
+extract	Odometry.cc	/^void Odometry_C::extract(const Odometry_C &ref){$/;"	f	class:Odometry_C
+file	csv.h	/^                        FILE*file;$/;"	m	class:io::detail::OwningStdIOByteSourceBase
+file_line	csv.h	/^                        int file_line;$/;"	m	struct:io::error::with_file_line
+file_line	csv.h	/^                unsigned file_line;$/;"	m	class:io::LineReader
+file_name	csv.h	/^                        char file_name[max_file_name_length+1];$/;"	m	struct:io::error::with_file_name
+file_name	csv.h	/^                char file_name[error::max_file_name_length+1];$/;"	m	class:io::LineReader
+find_next_column_end	csv.h	/^                static const char*find_next_column_end(const char*col_begin){$/;"	f	struct:io::double_quote_escape
+find_next_column_end	csv.h	/^                static const char*find_next_column_end(const char*col_begin){$/;"	f	struct:io::no_quote_escape
+finish_read	csv.h	/^                        int finish_read(){$/;"	f	class:io::detail::AsynchronousReader
+finish_read	csv.h	/^                        int finish_read(){$/;"	f	class:io::detail::SynchronousReader
+getError	evaluater.cc	/^double evalData_t::getError(int seq){$/;"	f	class:evalData_t
+getErrorAndPoint	evaluater.cc	/^void getErrorAndPoint(PairPoseList_t &list,evalData_t &data,double distance){$/;"	f
+getMatchTimePair	evaluater.cc	/^void getMatchTimePair($/;"	f
+getPos	Pose.h	/^		Eigen::Vector3d getPos(void){ return pos;}$/;"	f	class:Pose_C
+getTime	Pose.h	/^		uint64_t getTime(void) const { return time;}$/;"	f	class:Pose_C
+get_file_line	csv.h	/^                unsigned get_file_line()const{$/;"	f	class:io::CSVReader
+get_file_line	csv.h	/^                unsigned get_file_line()const{$/;"	f	class:io::LineReader
+get_truncated_file_name	csv.h	/^                const char*get_truncated_file_name()const{$/;"	f	class:io::CSVReader
+get_truncated_file_name	csv.h	/^                const char*get_truncated_file_name()const{$/;"	f	class:io::LineReader
+has_column	csv.h	/^                bool has_column(const std::string&name) const {$/;"	f	class:io::CSVReader
+header_missing	csv.h	/^                struct header_missing :$/;"	s	namespace:io::error
+ignore_extra_column	csv.h	/^        static const ignore_column ignore_extra_column = 1;$/;"	m	namespace:io
+ignore_missing_column	csv.h	/^        static const ignore_column ignore_missing_column = 2;$/;"	m	namespace:io
+ignore_no_column	csv.h	/^        static const ignore_column ignore_no_column = 0;$/;"	m	namespace:io
+ignore_overflow	csv.h	/^        struct ignore_overflow{$/;"	s	namespace:io
+in	csv.h	/^                       std::istream&in;$/;"	m	class:io::detail::NonOwningIStreamByteSource
+in	csv.h	/^                LineReader in;$/;"	m	class:io::CSVReader
+iniThFAST	evaluater.cc	/^		int iniThFAST;$/;"	m	class:evalData_t	file:
+init	csv.h	/^                        void init(std::unique_ptr<ByteSourceBase>arg_byte_source){$/;"	f	class:io::detail::AsynchronousReader
+init	csv.h	/^                        void init(std::unique_ptr<ByteSourceBase>arg_byte_source){$/;"	f	class:io::detail::SynchronousReader
+init	csv.h	/^                void init(std::unique_ptr<ByteSourceBase>byte_source){$/;"	f	class:io::LineReader
+insert	Odometry.cc	/^void Odometry_C::insert(const Pose_C &in){$/;"	f	class:Odometry_C
+insert	evaluater.cc	/^void evalData_t::insert(double x,double y,double error){$/;"	f	class:evalData_t
+integer_must_be_positive	csv.h	/^                struct integer_must_be_positive :$/;"	s	namespace:io::error
+integer_overflow	csv.h	/^                struct integer_overflow :$/;"	s	namespace:io::error
+integer_underflow	csv.h	/^                struct integer_underflow :$/;"	s	namespace:io::error
+invalid_single_character	csv.h	/^                struct invalid_single_character :$/;"	s	namespace:io::error
+io	csv.h	/^namespace io{$/;"	n
+is_comment	csv.h	/^                static bool is_comment(const char*){$/;"	f	struct:io::no_comment
+is_comment	csv.h	/^                static bool is_comment(const char*line){$/;"	f	struct:io::empty_line_comment
+is_comment	csv.h	/^                static bool is_comment(const char*line){$/;"	f	struct:io::single_and_empty_line_comment
+is_comment	csv.h	/^                static bool is_comment(const char*line){$/;"	f	struct:io::single_line_comment
+is_comment_start_char	csv.h	/^                constexpr static bool is_comment_start_char(char c, char comment_start_char, OtherCommentStartChars...other_comment_start_chars){$/;"	f	struct:io::single_line_comment
+is_comment_start_char	csv.h	/^                constexpr static bool is_comment_start_char(char){$/;"	f	struct:io::single_line_comment
+is_trim_char	csv.h	/^                constexpr static bool is_trim_char(char c, char trim_char, OtherTrimChars...other_trim_chars){$/;"	f	struct:io::trim_chars
+is_trim_char	csv.h	/^                constexpr static bool is_trim_char(char){$/;"	f	struct:io::trim_chars
+is_valid	csv.h	/^                        bool is_valid()const{$/;"	f	class:io::detail::AsynchronousReader
+is_valid	csv.h	/^                        bool is_valid()const{$/;"	f	class:io::detail::SynchronousReader
+line_length_limit_exceeded	csv.h	/^                struct line_length_limit_exceeded :$/;"	s	namespace:io::error
+load	Odometry.cc	/^void Odometry_C::load(char *filename,FILETYPE type){$/;"	f	class:Odometry_C
+load	evaluater.cc	/^void evalData_t::load(const char *filename,evalData_t &out){$/;"	f	class:evalData_t
+loadParam	evaluater.cc	/^void evalData_t::loadParam(const char *filename){$/;"	f	class:evalData_t
+lock	csv.h	/^                        std::mutex lock;$/;"	m	class:io::detail::AsynchronousReader
+main	Evaluater.cc	/^int main(int argc, char *argv[]){$/;"	f
+main	evaluater.cc	/^int main(int argc, char **argv){$/;"	f
+max_column_content_length	csv.h	/^                const int max_column_content_length = 63;$/;"	m	namespace:io::error
+max_column_name_length	csv.h	/^                const int max_column_name_length = 63;$/;"	m	namespace:io::error
+max_file_name_length	csv.h	/^                const int max_file_name_length = 255;$/;"	m	namespace:io::error
+minThFAST	evaluater.cc	/^		int minThFAST;$/;"	m	class:evalData_t	file:
+missing_column_in_header	csv.h	/^                struct missing_column_in_header :$/;"	s	namespace:io::error
+nFeatures	evaluater.cc	/^		int nFeatures;$/;"	m	class:evalData_t	file:
+nLevels	evaluater.cc	/^		int nLevels;$/;"	m	class:evalData_t	file:
+next_line	csv.h	/^		char*next_line(){$/;"	f	class:io::CSVReader
+next_line	csv.h	/^                char*next_line(){$/;"	f	class:io::LineReader
+no_comment	csv.h	/^        struct no_comment{$/;"	s	namespace:io
+no_digit	csv.h	/^                struct no_digit :$/;"	s	namespace:io::error
+no_quote_escape	csv.h	/^        struct no_quote_escape{$/;"	s	namespace:io
+on_overflow	csv.h	/^                static void on_overflow(T&){$/;"	f	struct:io::throw_on_overflow
+on_overflow	csv.h	/^                static void on_overflow(T&){}$/;"	f	struct:io::ignore_overflow
+on_overflow	csv.h	/^                static void on_overflow(T&x){$/;"	f	struct:io::set_to_max_on_overflow
+on_underflow	csv.h	/^                static void on_underflow(T&){$/;"	f	struct:io::throw_on_overflow
+on_underflow	csv.h	/^                static void on_underflow(T&){}$/;"	f	struct:io::ignore_overflow
+on_underflow	csv.h	/^                static void on_underflow(T&x){$/;"	f	struct:io::set_to_max_on_overflow
+open_file	csv.h	/^                static std::unique_ptr<ByteSourceBase> open_file(const char*file_name){$/;"	f	class:io::LineReader
+parse	csv.h	/^                template<class overflow_policy> void parse(char*col, double&x) { parse_float(col, x); }$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy> void parse(char*col, float&x) { parse_float(col, x); }$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy> void parse(char*col, long double&x) { parse_float(col, x); }$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, signed char &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, signed int &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, signed long &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, signed long long &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, signed short &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, unsigned char &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, unsigned int &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, unsigned long &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, unsigned long long &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                template<class overflow_policy>void parse(char*col, unsigned short &x)$/;"	f	namespace:io::detail
+parse	csv.h	/^                void parse(char*col, T&x){$/;"	f	namespace:io::detail
+parse	csv.h	/^                void parse(char*col, char &x){$/;"	f	namespace:io::detail
+parse	csv.h	/^                void parse(char*col, char*&x){$/;"	f	namespace:io::detail
+parse	csv.h	/^                void parse(char*col, const char*&x){$/;"	f	namespace:io::detail
+parse	csv.h	/^                void parse(char*col, std::string&x){$/;"	f	namespace:io::detail
+parse_float	csv.h	/^                void parse_float(const char*col, T&x){$/;"	f	namespace:io::detail
+parse_header_line	csv.h	/^                void parse_header_line($/;"	f	namespace:io::detail
+parse_helper	csv.h	/^                void parse_helper(std::size_t r, T&t, ColType&...cols){$/;"	f	class:io::CSVReader
+parse_helper	csv.h	/^                void parse_helper(std::size_t){}$/;"	f	class:io::CSVReader
+parse_line	csv.h	/^                void parse_line($/;"	f	namespace:io::detail
+parse_signed_integer	csv.h	/^                void parse_signed_integer(const char*col, T&x){$/;"	f	namespace:io::detail
+parse_unsigned_integer	csv.h	/^                void parse_unsigned_integer(const char*col, T&x){$/;"	f	namespace:io::detail
+pitch	Pose.h	/^		double roll,pitch,yaw;$/;"	m	class:Pose_C
+pos	Pose.h	/^		Eigen::Vector3d pos;$/;"	m	class:Pose_C
+pose	Odometry.h	/^		std::vector<Pose_C> pose;$/;"	m	class:Odometry_C
+pose	evaluater.cc	/^	geometry_msgs::Pose pose;$/;"	m	struct:pose_t	file:
+pose_t	evaluater.cc	/^struct pose_t {$/;"	s	file:
+position2vector	evaluater.cc	/^void position2vector(const geometry_msgs::Pose &in, tf::Vector3 &out){$/;"	f
+print	Odometry.cc	/^void Odometry_C::print(bool flag){$/;"	f	class:Odometry_C
+print	Pose.cc	/^void Pose_C::print(void){$/;"	f	class:Pose_C
+printParam	evaluater.cc	/^void evalData_t::printParam(void){$/;"	f	class:evalData_t
+printResult	evaluater.cc	/^void printResult(std::vector<evalData_t> &evalDataList,int seq){$/;"	f
+read	csv.h	/^                        int read(char*buffer, int desired_byte_count){$/;"	f	class:io::detail::NonOwningStringByteSource
+read	csv.h	/^                        int read(char*buffer, int size){$/;"	f	class:io::detail::NonOwningIStreamByteSource
+read	csv.h	/^                        int read(char*buffer, int size){$/;"	f	class:io::detail::OwningStdIOByteSourceBase
+read_byte_count	csv.h	/^                        int read_byte_count;$/;"	m	class:io::detail::AsynchronousReader
+read_error	csv.h	/^                        std::exception_ptr read_error;$/;"	m	class:io::detail::AsynchronousReader
+read_finished_condition	csv.h	/^                        std::condition_variable read_finished_condition;$/;"	m	class:io::detail::AsynchronousReader
+read_header	csv.h	/^                void read_header(ignore_column ignore_policy, ColNames...cols){$/;"	f	class:io::CSVReader
+read_requested_condition	csv.h	/^                        std::condition_variable read_requested_condition;$/;"	m	class:io::detail::AsynchronousReader
+read_row	csv.h	/^                bool read_row(ColType& ...cols){$/;"	f	class:io::CSVReader
+reader	csv.h	/^                detail::AsynchronousReader reader;$/;"	m	class:io::LineReader
+reader	csv.h	/^                detail::SynchronousReader reader;$/;"	m	class:io::LineReader
+remaining_byte_count	csv.h	/^                        long long remaining_byte_count;$/;"	m	class:io::detail::NonOwningStringByteSource
+roll	Pose.h	/^		double roll,pitch,yaw;$/;"	m	class:Pose_C
+rotate	Pose.cc	/^void Pose_C::rotate(double roll_,double pitch_,double yaw_){$/;"	f	class:Pose_C
+row	csv.h	/^                char*row[column_count];$/;"	m	class:io::CSVReader
+rpy_to_geometry_quat	evaluater.cc	/^geometry_msgs::Quaternion rpy_to_geometry_quat(double roll, double pitch, double yaw){$/;"	f
+save	evaluater.cc	/^void evalData_t::save(const char *filename){$/;"	f	class:evalData_t
+scale	Pose.cc	/^void Pose_C::scale(double scale){$/;"	f	class:Pose_C
+scaleFactor	evaluater.cc	/^		double scaleFactor;$/;"	m	class:evalData_t	file:
+setParam	evaluater.cc	/^void evalData_t::setParam(int nF,double sF,int nL,int iT,int mT){$/;"	f	class:evalData_t
+set_column_content	csv.h	/^                        void set_column_content(const char*column_content){$/;"	f	struct:io::error::with_column_content
+set_column_name	csv.h	/^                        void set_column_name(const char*column_name){$/;"	f	struct:io::error::with_column_name
+set_column_names	csv.h	/^                void set_column_names(){}$/;"	f	class:io::CSVReader
+set_column_names	csv.h	/^                void set_column_names(std::string s, ColNames...cols){$/;"	f	class:io::CSVReader
+set_errno	csv.h	/^                        void set_errno(int errno_value){$/;"	f	struct:io::error::with_errno
+set_file_line	csv.h	/^                        void set_file_line(int file_line){$/;"	f	struct:io::error::with_file_line
+set_file_line	csv.h	/^                void set_file_line(unsigned file_line){$/;"	f	class:io::CSVReader
+set_file_line	csv.h	/^                void set_file_line(unsigned file_line){$/;"	f	class:io::LineReader
+set_file_name	csv.h	/^                        void set_file_name(const char*file_name){$/;"	f	struct:io::error::with_file_name
+set_file_name	csv.h	/^                void set_file_name(const char*file_name){$/;"	f	class:io::CSVReader
+set_file_name	csv.h	/^                void set_file_name(const char*file_name){$/;"	f	class:io::LineReader
+set_file_name	csv.h	/^                void set_file_name(const std::string&file_name){$/;"	f	class:io::CSVReader
+set_file_name	csv.h	/^                void set_file_name(const std::string&file_name){$/;"	f	class:io::LineReader
+set_header	csv.h	/^                void set_header(ColNames...cols){$/;"	f	class:io::CSVReader
+set_to_max_on_overflow	csv.h	/^        struct set_to_max_on_overflow{$/;"	s	namespace:io
+single_and_empty_line_comment	csv.h	/^        struct single_and_empty_line_comment{$/;"	s	namespace:io
+single_line_comment	csv.h	/^        struct single_line_comment{$/;"	s	namespace:io
+stamp	evaluater.cc	/^	uint64_t stamp;$/;"	m	struct:pose_t	file:
+start_read	csv.h	/^                        void start_read(char*arg_buffer, int arg_desired_byte_count){$/;"	f	class:io::detail::AsynchronousReader
+start_read	csv.h	/^                        void start_read(char*arg_buffer, int arg_desired_byte_count){$/;"	f	class:io::detail::SynchronousReader
+str	csv.h	/^                        const char*str;$/;"	m	class:io::detail::NonOwningStringByteSource
+termination_requested	csv.h	/^                        bool termination_requested;$/;"	m	class:io::detail::AsynchronousReader
+throw_on_overflow	csv.h	/^        struct throw_on_overflow{$/;"	s	namespace:io
+time	Pose.h	/^		uint64_t time;$/;"	m	class:Pose_C
+too_few_columns	csv.h	/^                struct too_few_columns :$/;"	s	namespace:io::error
+too_many_columns	csv.h	/^                struct too_many_columns :$/;"	s	namespace:io::error
+trim	csv.h	/^                static void trim(char*&str_begin, char*&str_end){$/;"	f	struct:io::trim_chars
+trim_chars	csv.h	/^        struct trim_chars{$/;"	s	namespace:io
+unescape	csv.h	/^                static void unescape(char*&, char*&){$/;"	f	struct:io::no_quote_escape
+unescape	csv.h	/^                static void unescape(char*&col_begin, char*&col_end){$/;"	f	struct:io::double_quote_escape
+with_column_content	csv.h	/^                        with_column_content(){$/;"	f	struct:io::error::with_column_content
+with_column_content	csv.h	/^                struct with_column_content{$/;"	s	namespace:io::error
+with_column_name	csv.h	/^                        with_column_name(){$/;"	f	struct:io::error::with_column_name
+with_column_name	csv.h	/^                struct with_column_name{$/;"	s	namespace:io::error
+with_errno	csv.h	/^                        with_errno(){$/;"	f	struct:io::error::with_errno
+with_errno	csv.h	/^                struct with_errno{$/;"	s	namespace:io::error
+with_file_line	csv.h	/^                        with_file_line(){$/;"	f	struct:io::error::with_file_line
+with_file_line	csv.h	/^                struct with_file_line{$/;"	s	namespace:io::error
+with_file_name	csv.h	/^                        with_file_name(){$/;"	f	struct:io::error::with_file_name
+with_file_name	csv.h	/^                struct with_file_name{$/;"	s	namespace:io::error
+worker	csv.h	/^                        std::thread worker;$/;"	m	class:io::detail::AsynchronousReader
+yaw	Pose.h	/^		double roll,pitch,yaw;$/;"	m	class:Pose_C
+~AsynchronousReader	csv.h	/^                        ~AsynchronousReader(){$/;"	f	class:io::detail::AsynchronousReader
+~ByteSourceBase	csv.h	/^                virtual ~ByteSourceBase(){}$/;"	f	class:io::ByteSourceBase
+~NonOwningIStreamByteSource	csv.h	/^                        ~NonOwningIStreamByteSource(){}$/;"	f	class:io::detail::NonOwningIStreamByteSource
+~NonOwningStringByteSource	csv.h	/^                        ~NonOwningStringByteSource(){}$/;"	f	class:io::detail::NonOwningStringByteSource
+~OwningStdIOByteSourceBase	csv.h	/^                        ~OwningStdIOByteSourceBase(){$/;"	f	class:io::detail::OwningStdIOByteSourceBase

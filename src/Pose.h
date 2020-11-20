@@ -14,5 +14,6 @@ class Pose_C{
 		void print(void);
 		uint64_t getTime(void) const { return time;}
 		Eigen::Vector3d getPos(void){ return pos;}
+		void setPos(Eigen::Vector3d in){ pos = in; }
 };
 #endif

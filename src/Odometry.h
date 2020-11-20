@@ -10,10 +10,14 @@ class Odometry_C{
 	private:
 	public:
 		std::vector<Pose_C> pose;
-		void load(char *filename,FILETYPE type);
+		void load(const char *filename,FILETYPE type,int limit = 100000);
+		void save(char *filename);
 		void print(bool flag);
 		void extract(const Odometry_C &ref);
 		void insert(const Pose_C &in);
+		void rotatePos(double r,double p,double y);
+		void reset(void);
+		double length(void);
 };
 #endif
 
